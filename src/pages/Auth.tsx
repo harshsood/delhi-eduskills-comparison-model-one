@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -12,20 +11,17 @@ import { z } from "zod";
 const Auth = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
-  const [isOtpSent, setIsOtpSent] = useState(false);
-  const [currentEmail, setCurrentEmail] = useState("");
 
   const emailSchema = z.string().email("Invalid email address").max(255);
   const passwordSchema = z.string().min(8, "Password must be at least 8 characters").max(100);
-  const otpSchema = z.string().length(6, "OTP must be 6 digits").regex(/^\d+$/, "OTP must contain only numbers");
 
-  const handleSendOTP = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSignup = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
     const email = formData.get("email") as string;
     const name = formData.get("name") as string;
+    const phone = formData.get("phone") as string;
 
-    // Validate email
     const emailValidation = emailSchema.safeParse(email);
     if (!emailValidation.success) {
       toast({
@@ -36,7 +32,6 @@ const Auth = () => {
       return;
     }
 
-    // Validate name
     if (!name || name.trim().length === 0 || name.trim().length > 100) {
       toast({
         title: "Validation Error",
@@ -46,36 +41,20 @@ const Auth = () => {
       return;
     }
 
-    setCurrentEmail(email);
-    setIsOtpSent(true);
-    toast({
-      title: "OTP Sent",
-      description: `A 6-digit OTP has been sent to ${email}`,
-    });
-  };
-
-  const handleVerifyOTP = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    const formData = new FormData(e.currentTarget);
-    const otp = formData.get("otp") as string;
-
-    // Validate OTP
-    const otpValidation = otpSchema.safeParse(otp);
-    if (!otpValidation.success) {
+    if (!phone || !/^\+?\d{10,15}$/.test(phone.replace(/\s/g, ''))) {
       toast({
         title: "Validation Error",
-        description: otpValidation.error.errors[0].message,
+        description: "Please enter a valid phone number",
         variant: "destructive"
       });
       return;
     }
 
-    // Simulate OTP verification
     toast({
       title: "Registration Successful",
       description: "Your account has been created successfully!",
     });
-    
+
     setTimeout(() => {
       navigate("/compare");
     }, 1500);
@@ -151,87 +130,43 @@ const Auth = () => {
 
               {/* Sign Up Tab */}
               <TabsContent value="signup">
-                {!isOtpSent ? (
-                  <form onSubmit={handleSendOTP} className="space-y-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="name">Full Name</Label>
-                      <Input
-                        id="name"
-                        name="name"
-                        placeholder="John Doe"
-                        required
-                        maxLength={100}
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="email">Email</Label>
-                      <Input
-                        id="email"
-                        name="email"
-                        type="email"
-                        placeholder="student@example.com"
-                        required
-                        maxLength={255}
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="phone">Phone Number</Label>
-                      <Input
-                        id="phone"
-                        name="phone"
-                        type="tel"
-                        placeholder="+91 XXXXX XXXXX"
-                        required
-                        maxLength={15}
-                      />
-                    </div>
-                    <Button type="submit" className="w-full">
-                      Send OTP
-                    </Button>
-                  </form>
-                ) : (
-                  <form onSubmit={handleVerifyOTP} className="space-y-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="otp">Enter OTP</Label>
-                      <Input
-                        id="otp"
-                        name="otp"
-                        placeholder="123456"
-                        required
-                        maxLength={6}
-                        pattern="\d{6}"
-                      />
-                      <p className="text-sm text-muted-foreground">
-                        OTP sent to {currentEmail}
-                      </p>
-                    </div>
-                    <div className="flex gap-2">
-                      <Button type="submit" className="flex-1">
-                        Verify & Register
-                      </Button>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        onClick={() => setIsOtpSent(false)}
-                      >
-                        Change Email
-                      </Button>
-                    </div>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      className="w-full text-sm"
-                      onClick={() => {
-                        toast({
-                          title: "OTP Resent",
-                          description: `A new OTP has been sent to ${currentEmail}`,
-                        });
-                      }}
-                    >
-                      Resend OTP
-                    </Button>
-                  </form>
-                )}
+                <form onSubmit={handleSignup} className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="name">Full Name</Label>
+                    <Input
+                      id="name"
+                      name="name"
+                      placeholder="John Doe"
+                      required
+                      maxLength={100}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="email">Email</Label>
+                    <Input
+                      id="email"
+                      name="email"
+                      type="email"
+                      placeholder="student@example.com"
+                      required
+                      maxLength={255}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="phone">Phone Number</Label>
+                    <Input
+                      id="phone"
+                      name="phone"
+                      type="tel"
+                      placeholder="+91 XXXXX XXXXX"
+                      required
+                      maxLength={15}
+                    />
+                  </div>
+                  <Button type="submit" className="w-full">
+                    Create Account
+                  </Button>
+                </form>
               </TabsContent>
 
               {/* Login Tab */}
